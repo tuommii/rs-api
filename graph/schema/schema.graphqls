@@ -1,0 +1,125 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+# =============================================================================
+# QUERYS
+# =============================================================================
+
+type Query {
+	# Returns list of users that starts with <prefix>
+	getUsersWithPrefix(prefix:String!): [User!]!
+
+	# Returns all stats for <username>
+	getStatsForUser(username:String!):StatsSummary
+
+	# Returns most recent games
+	getMostRecentGames(count:Int!):[Game!]!
+
+	# Get latest available tags
+	getLatestAvailableTags(token:String!, count:Int!):[TagAvailable!]!
+}
+
+# =============================================================================
+# MUTATIONS
+# =============================================================================
+
+type Mutation {
+	# Add RFID for <username>. Used with Arduino-device
+	createRFIDForUser(token:String!, tag: String!):String
+
+	# Deprecated. Might be used later
+	# Login
+	# login(username:String!, password:String!):String
+
+
+	# Deprecated. Might be user later
+	# Logout
+	# logout(token:String!):String
+
+
+	# Deprecated. Might be used later
+	# createGame(input: NewGame!):String
+}
+
+# =============================================================================
+# QUERY TYPES
+# =============================================================================
+type StatsSummary {
+	stats: [StatsForSport!]
+}
+
+type StatsForSport {
+	sportName: String!
+	stats: [StatsForPlayer!]
+}
+
+type StatsForPlayer {
+	user: User!
+	stats: StatsEntry!
+}
+
+type User {
+	id: ID!
+	username: String!
+	firstName: String!
+	lastName: String!
+	avatar: String
+	email: String!
+	about: String
+	title: String
+}
+
+type Sport {
+	id: ID!
+	name: String!
+}
+
+type Game {
+	id: ID!
+	winner: User!
+	loser: User!
+	# winner and loser doesn't matter if this is true
+	isTie: Boolean!
+	sport: Sport!
+	createdAt: String!
+}
+
+type StatsEntry {
+	wins: Int!
+	ties: Int!
+	losses: Int!
+}
+
+# Scanned tag that hasn't registered
+type TagAvailable {
+	id: String!
+	createdAt: String!
+}
+
+# =============================================================================
+# MUTATION TYPES
+# =============================================================================
+input NewUser {
+	username: String!
+	password: String!
+	firstName: String!
+	lastName: String!
+	email: String!
+	about: String
+	title: String
+}
+
+input NewGame {
+	# What sport they played
+	sportName: String!
+	# All players who were involved in this game/match
+	players: [PlayerSummary]!
+}
+
+
+input PlayerSummary {
+	username: String!
+	# 0 loss, 1 win, 2 tie
+	result: Int!
+}

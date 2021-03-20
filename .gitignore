@@ -1,0 +1,8 @@
+ansible/rs_api
+ansible/.env
+bin
+*.db
+.env
+example.bleve/
+example.bleve
+*.bleve

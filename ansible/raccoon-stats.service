@@ -1,0 +1,15 @@
+[Unit]
+Description=raccoon-stats
+
+[Service]
+User=raccoon
+Group=raccoon
+Type=simple
+Restart=always
+StandardOutput=file:/home/raccoon/out.log
+StandardError=file:/home/raccoon/err.log
+RestartSec=5s
+ExecStart=/home/raccoon/rs_api -env=/home/raccoon/.env
+
+[Install]
+WantedBy=multi-user.target

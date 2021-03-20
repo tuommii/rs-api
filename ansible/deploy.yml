@@ -1,0 +1,47 @@
+- hosts: dioc
+  become: yes
+  tasks:
+  # - name: create raccoon group
+  #   group:
+  #     name: raccoon
+  #     state: present
+
+  # - name: create raccoon user
+  #   user:
+  #     name: raccoon
+  #     groups: raccoon
+  #     append: yes
+  #     state: present
+  #     create_home: yes
+
+  - name: stop systemd service if running
+    systemd:
+      name: raccoon-stats
+      state: stopped
+    ignore_errors: yes
+
+  - name: copy systemd file to server
+    copy:
+      src: ./raccoon-stats.service
+      dest: /lib/systemd/system/raccoon-stats.service
+
+  - name: copy binary to server
+    copy:
+      src: ./rs_api
+      dest: /home/raccoon
+      mode: 0755
+      owner: raccoon
+      group: raccoon
+
+  # - name: copy .env file to server
+  #   copy:
+  #     src: ./.env
+  #     dest: /home/raccoon
+  #     mode: 0755
+  #     owner: raccoon
+  #     group: raccoon
+
+  # - name: start systemd service if not running
+  #   systemd:
+  #     name: raccoon-stats
+  #     state: started

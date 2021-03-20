@@ -1,0 +1,78 @@
+name: Continuous Delivery
+on:
+  push:
+    branches:
+      - production
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Compile binary file
+    steps:
+
+    - name: Get code
+      uses: actions/checkout@v2
+      with:
+        ref: "master"
+
+    - name: Make directory
+      run: mkdir deploy
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      env:
+        GOPROXY: "https://proxy.golang.org"
+      with:
+        go-version: ^1.14
+      id: go
+
+    - name: Build server
+      env:
+        GOPROXY: "https://proxy.golang.org"
+      run: |
+        go get ./...
+        go build -v -o deploy/rs_api cmd/rs/*.go
+
+    - name: Copy files
+      run: |
+        cp Makefile deploy/
+        cp -r scripts deploy/
+
+    - name: Name artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: rs_api
+        path: deploy/
+
+
+  deploy:
+      runs-on: ubuntu-latest
+      name:  Deploy artifact to Digital Ocean
+      needs: build
+      steps:
+
+      - name: Download uploaded binary
+        uses: actions/download-artifact@v1
+        with:
+          name: rs_api
+
+      - name: Make executable
+        run: chmod +x rs_api/rs_api
+
+      - name: Transfer with SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          source: rs_api
+          target: ${{ secrets.WORKDIR }}
+
+      - name: Example command via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: "ls ${{ secrets.WORKDIR }}"
