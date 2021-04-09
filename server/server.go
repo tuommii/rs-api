@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"miikka.xyz/rs/config"
 	"miikka.xyz/rs/graph/generated"
 	"miikka.xyz/rs/graph/resolvers"
@@ -19,6 +21,16 @@ type Server struct {
 	db     *store.DB
 	config *config.Config
 }
+
+var simpleCounter = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Name: "health_check_counter",
+		Help: "Simple counter for health checks",
+		ConstLabels: prometheus.Labels{
+			"resource": "Resource Demo",
+			"group":    "Demo",
+		},
+	})
 
 // NewServer gives you server instance
 func NewServer(db *store.DB, config *config.Config) *Server {
@@ -35,6 +47,8 @@ func (s *Server) Start() {
 	// Github authentication
 	ghAuth := oauth.GetGithub(s.db)
 
+	prometheus.Register(simpleCounter)
+	http.Handle("/metrics", promhttp.Handler())
 	// Don't use prefix here. Routes under prefix are possibly under proxy
 	http.HandleFunc("/login/github", ghAuth.GetStartHandler(s.config))
 	http.HandleFunc("/github", ghAuth.GetCallbackHandler(s.config))
@@ -82,6 +96,7 @@ func applyCORS(h http.Handler) http.Handler {
 
 // Health check
 func health(w http.ResponseWriter, r *http.Request) {
+	simpleCounter.Inc()
 	log.Info("health check")
 	w.Write([]byte("ok"))
 }
