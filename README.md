@@ -5,18 +5,21 @@ Made with Go, GraphQL ([gqlgen](https://github.com/99designs/gqlgen)) and Postgr
 
 ### Run
 
+Rename **.env-example** to **.env** and set values
+
 Create database schema
 ```
 psql -h 12.13.14.15 -p 5432 -d DB_NAME -U DB_USER -a -f scripts/create_database.sql -W
 ```
-
-Rename **.env-example** to **.env** and set values
 
 Run with
 `make run`
 
 ### Docker
 Rename **.env-example** to **.env** and set values
+
+Compose
+`docker-compose up`
 
 Build
 `docker build . -t rs_api_docker:latest`
