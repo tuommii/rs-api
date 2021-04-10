@@ -53,7 +53,7 @@ func (a *Auth) GetStartHandler(config *config.Config) http.HandlerFunc {
 // GetCallbackHandler returns function that handles getting info about user
 func (a *Auth) GetCallbackHandler(config *config.Config) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("URL params: %+v", r.URL.Query())
+		log.Info("URL params: ", r.URL.Query())
 
 		if err := checkState(r, config.GithubState); err != nil {
 			w.Write([]byte("error"))

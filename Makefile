@@ -29,6 +29,9 @@ deploy: build
 	rm ./ansible/.env
 	rm ./ansible/$(BINARY_NAME)
 
+test:
+	go test -v ./...
+
 # First run ?
 #init-gql:
 #	go run github.com/99designs/gqlgen init
