@@ -21,15 +21,6 @@ Rename **.env-example** to **.env** and set values
 Compose
 `docker-compose up`
 
-Build
-`docker build . -t rs_api_docker:latest`
-
-Run
-`docker run -p 8080:4200 rs_api_docker`
-
-Logs
-`docker ps -a docker logs ce62844970f8`
-
 ## Development
 1. Edit GraphQL-schema in `graph/schema/schema.graphqls`
 
