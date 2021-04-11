@@ -18,8 +18,7 @@ Run with
 ### Docker
 Rename **.env-example** to **.env** and set values
 
-Compose
-`docker-compose up`
+Run `docker-compose up`
 
 ## Development
 1. Edit GraphQL-schema in `graph/schema/schema.graphqls`
