@@ -1,23 +1,66 @@
-version: '3.1'
+version: '3.8'
 
 services:
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
+
+  postgres:
+    image: postgres:10.16
+    container_name: postgres_container
     ports:
-      - "3000:3000"
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: ${RS_DB_USER}
+      POSTGRES_USER: ${RS_DB_USER}
+      POSTGRES_PASSWORD: ${RS_DB_PASSWORD}
     volumes:
-      - grafana-storage:/var/lib/grafana
-  rs_api:
+      - ./scripts/create_database.sql:/docker-entrypoint-initdb.d/1.sql
+      - ./scripts/seed_database.sql:/docker-entrypoint-initdb.d/2.sql
+    networks: [ "backend" ]
+    restart: always
+
+
+  # Hostname: postgres
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    logging:
+      driver: none
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - pgadmin:/root/.pgadmin
+
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks: [ "backend" ]
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+
+  api:
     build:
       context: ./
       dockerfile: Dockerfile
-    container_name: rs_api
-    restart: always
+    container_name: api_container
+    networks: [ "backend" ]
     ports:
       - '4200:4200'
+    environment:
+      RS_DB_HOST: postgres
+    depends_on:
+      - postgres
+    restart: always
+
+
+
+
   prometheus:
     image: prom/prometheus:v2.24.0
+    container_name: prometheus_container
+    logging:
+      driver: none
     volumes:
       - ./prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
@@ -28,8 +71,32 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
       - 9090:9090
-    restart: always
+    networks: [ "backend" ]
+    restart: unless-stopped
+
+
+
+  grafana:
+    image: grafana/grafana:latest
+    logging:
+      driver: none
+    container_name: grafana_container
+    networks: [ "backend" ]
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: unless-stopped
+
+
+
+networks:
+  backend:
+    driver: bridge
+
 
 volumes:
+  postgres:
+  pgadmin:
   grafana-storage:
   prometheus_data:

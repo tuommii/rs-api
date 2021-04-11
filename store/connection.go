@@ -17,6 +17,7 @@ type DB struct {
 // NewDB returns database instance
 func NewDB(config *config.Config) *DB {
 	connStr := "postgresql://" + config.DBUser + ":" + config.DBPassword + "@" + config.DBURL + "/" + config.DBName
+	log.Info("connection string: ", connStr)
 	conn, err := pgxpool.Connect(context.Background(), connStr)
 	if err != nil {
 		log.Fatal(err)
