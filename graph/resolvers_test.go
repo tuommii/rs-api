@@ -1,6 +1,7 @@
 package resolvers_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
@@ -13,8 +14,18 @@ import (
 )
 
 func TestResolvers(t *testing.T) {
-	config := config.Load("../.env")
+	config := config.Load("../.env-testing")
 	database := store.NewDB(config)
+
+	err := store.ExecuteSQLFile(database, "../scripts/create_database.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = store.ExecuteSQLFile(database, "../scripts/seed_database.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer database.Close()
 	r := resolvers.NewRootResolvers(database)
 	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: r})))
@@ -32,5 +43,8 @@ func TestResolvers(t *testing.T) {
 	}
 `
 	c.MustPost(q, &resp)
-	t.Logf("response: %+v", resp)
+	//t.Logf("response: %+v", resp)
+	for _, obj := range resp.GetStatsForUser.Stats {
+		t.Log("Sport name:", obj.SportName)
+	}
 }

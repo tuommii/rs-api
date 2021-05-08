@@ -3,6 +3,7 @@ ansible/.env
 bin
 *.db
 .env
+.env-testing
 example.bleve/
 example.bleve
 *.bleve
